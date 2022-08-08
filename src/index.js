@@ -1,4 +1,5 @@
 import './style.css';
+import printMe from './print.js';
 
 const TodoItem = (title, description, dueDate, priority) => {
   return { title, description, dueDate, priority };
@@ -10,6 +11,13 @@ const Project = (todoItemsArray) => {
 const DOMmodify = () => {
   // empty
 };
+
+const element = document.querySelector('#content');
+const btn = document.createElement('button');
+
+btn.innerHTML = 'Click me and check the console!';
+btn.onclick = printMe;
+element.appendChild(btn);
 
 // UI
 // view all projects
