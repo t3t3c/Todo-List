@@ -62,9 +62,18 @@ header {
 }
 
 nav {
-  font-size: 1.2rem;
+  color: #282c34;
+  font-size: 1.3rem;
+  font-weight: 900;
   background-color: var(--light-color);
   padding: 20px;
+}
+
+nav p {
+  text-align: center;
+  background-color: var(--white-color);
+  padding: 10px;
+  border-radius: 10px;
 }
 
 footer {
