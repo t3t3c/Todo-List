@@ -88,3 +88,11 @@ footer {
   align-items: center;
   gap: 20px;
 }
+
+.task-tile {
+  padding: 20px 20px;
+  margin: 20px 20px;
+  background-color: var(--light-color);
+  display: flex;
+  justify-content: space-between;
+}
