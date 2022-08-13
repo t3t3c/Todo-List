@@ -32,6 +32,7 @@ class Project {
 
 class Storage {
   static projects = [];
+  static currentProject = null;
   static addProject(newProject) {
     Storage.projects.push(newProject);
   }
@@ -45,8 +46,27 @@ class Storage {
       }
     }
   }
+
+  static returnProject(projectName) {
+    for (let i = 0; i < this.projects.length; i++) {
+      const project = this.projects[i];
+      if (project.name === projectName) {
+        return project;
+      }
+    }
+    return null;
+  }
+  static changeActiveProject(projectName) {
+    Storage.currentProject = Storage.returnProject(projectName);
+  }
 }
 class UI {
+  static clearContent() {
+    const inputForm = document.querySelector('#input-form');
+    if (inputForm !== null) {
+      inputForm.remove();
+    }
+  }
   static addInput() {
     // add Container for the input
     const content = document.querySelector('#content');
@@ -80,8 +100,11 @@ class UI {
     taskTile.appendChild(text);
     // delete button:
     const deleteButton = document.createElement('button');
-    deleteButton.innerText = 'X';
-    deleteButton.classList = 'task-delete-button';
+    const doneTick = document.createElement('span');
+    doneTick.className = 'material-icons';
+    doneTick.innerText = 'done';
+    deleteButton.appendChild(doneTick);
+    deleteButton.className = 'task-delete-button';
     // add delete function to the button:
     taskTile.appendChild(deleteButton);
     return taskTile;
@@ -105,6 +128,10 @@ class UI {
     document.querySelector('#task-title').value = '';
   }
   static addProjectInput() {
+    const existingForm = document.querySelector('#project-form');
+    if (existingForm !== null) {
+      existingForm.remove();
+    }
     const container = document.querySelector('#projects-container');
     const form = document.createElement('form');
     form.id = 'project-form';
@@ -139,18 +166,32 @@ class UI {
   static displayProjects() {
     const projectsContainer = document.querySelector('#projects-container');
     projectsContainer.innerHTML = '';
-    console.log(Storage.projects);
     for (const project of Storage.projects) {
       // create new tile:
       const newProjectTile = UI.createProjectTile(project);
       projectsContainer.appendChild(newProjectTile);
     }
   }
+  static addProject(project) {
+    const projectsContainer = document.querySelector('#projects-container');
+    const newProjectTile = UI.createProjectTile(project);
+    projectsContainer.appendChild(newProjectTile);
+  }
+  static changeActiveProject(target) {
+    const currentActive = document.querySelector('.active');
+    if (currentActive !== null) {
+      currentActive.classList.remove('active');
+    }
+    target.classList.add('active');
+  }
+  static displayActiveProject(projectName) {
+    const display = document.querySelector('#active-project-display');
+    display.innerText = projectName;
+  }
 }
 
 // code that needs to work now for testing:
-UI.addInput();
-const mainProject = new Project('Main Project');
+UI.displayActiveProject('Add new project and select it to start!');
 
 //Main body:
 function addButtonForTasks(event) {
@@ -164,8 +205,8 @@ function addButtonForTasks(event) {
   }
   // add task:
   const newTask = new Task(taskTitle);
-  mainProject.addTask(newTask);
-  UI.displayTasks(mainProject);
+  Storage.currentProject.addTask(newTask);
+  UI.displayTasks(Storage.currentProject);
   UI.clearTaskInput();
 }
 addGlobalEventListener('submit', '#input-form', addButtonForTasks);
@@ -173,7 +214,7 @@ addGlobalEventListener('submit', '#input-form', addButtonForTasks);
 function deleteButtonForTasks(event) {
   UI.removeTile(event.target.parentElement);
   const taskName = event.target.parentElement.firstChild.innerText;
-  mainProject.removeTask(taskName);
+  Storage.currentProject.removeTask(taskName);
 }
 addGlobalEventListener('click', '.task-delete-button', deleteButtonForTasks);
 
@@ -181,12 +222,18 @@ function deleteButtonForProjects(event) {
   UI.removeTile(event.target.parentElement);
   const projectName = event.target.parentElement.firstChild.innerText;
   Storage.removeProject(projectName);
+  // if we delete a current project
+  if (Storage.currentProject.name === projectName) {
+    UI.clearContent();
+    UI.displayActiveProject('Choose a project');
+  }
 }
 addGlobalEventListener(
   'click',
   '.project-delete-button',
   deleteButtonForProjects
 );
+
 addGlobalEventListener('click', '#add-project', UI.addProjectInput);
 
 function addButtonForProjects(event) {
@@ -196,10 +243,15 @@ function addButtonForProjects(event) {
   if (inputText === '') {
     inputText = 'Unnamed';
   }
-  const newProject = new Project(inputText);
-  Storage.addProject(newProject);
-  UI.hideProjectInput();
-  UI.displayProjects();
+  // cannot have two projects with the same name
+  if (Storage.returnProject(inputText) === null) {
+    const newProject = new Project(inputText);
+    Storage.addProject(newProject);
+    UI.hideProjectInput();
+    UI.addProject(newProject);
+  } else {
+    alert("Projects' names must be unique");
+  }
 }
 addGlobalEventListener('submit', '#project-form', addButtonForProjects);
 
@@ -212,6 +264,12 @@ function addGlobalEventListener(type, selector, callback) {
   });
 }
 function changeCurrentProject(event) {
-  console.log(document.querySelector('.project-tile'));
+  UI.clearContent();
+  UI.addInput();
+  const projectName = event.target.firstChild.innerText;
+  Storage.changeActiveProject(projectName);
+  UI.changeActiveProject(event.target);
+  UI.displayActiveProject(projectName);
+  UI.displayTasks(Storage.currentProject);
 }
 addGlobalEventListener('click', '.project-tile', changeCurrentProject);

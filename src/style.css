@@ -12,6 +12,17 @@ html {
   box-sizing: border-box;
 }
 
+/* I had a problem with events targeting the children of elements */
+/* solution from */
+/* https://css-tricks.com/slightly-careful-sub-elements-clickable-things/ */
+/* I don't like the idea of solving it outside of JS */
+/* but I would have to refactor a lot of code */
+
+button > *,
+p {
+  pointer-events: none;
+}
+
 :root {
   /* custom properties */
   /* Made based on atom one dark theme */
@@ -34,6 +45,9 @@ body {
   grid-template-rows: 80px 1fr 60px;
 }
 
+#content {
+  margin: 10px 50px;
+}
 header {
   background-color: var(--background-color);
   color: var(--white-color);
@@ -43,6 +57,31 @@ header {
   align-items: center;
 
   grid-column: 1 / -1;
+}
+
+button {
+  outline: none;
+  border: none;
+  border-radius: 10px;
+  padding: 5px;
+}
+
+button:hover {
+  cursor: pointer;
+  outline: 1px solid var(--background-color);
+}
+button:active {
+  outline: 2px solid var(--background-color);
+}
+
+input {
+  border: 1px solid var(--highlight-color);
+  padding: 5px 10px;
+  border-radius: 10px;
+}
+
+input:focus {
+  outline: 1px solid var(--highlight-color);
 }
 
 .logo {
@@ -61,7 +100,20 @@ header {
   font-size: 35px;
 }
 
+/* project-tiles: */
+
+/* nav {
+  display: flex;
+  flex: 0;
+  flex-direction: column;
+} */
+
 nav {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+
   color: #282c34;
   font-size: 1.3rem;
   font-weight: 900;
@@ -69,11 +121,67 @@ nav {
   padding: 20px;
 }
 
-nav p {
+nav h2 {
   text-align: center;
+  width: 100%;
   background-color: var(--white-color);
   padding: 10px;
   border-radius: 10px;
+}
+
+nav div#projects-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+}
+
+nav div.project-tile {
+  border-radius: 10px;
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+}
+
+nav div.project-tile.active {
+  background-color: var(--white-color);
+}
+
+nav div.project-tile.active p {
+  font-weight: 900;
+}
+
+nav div.project-tile p {
+  padding: 10px;
+  font-weight: 400;
+  font-size: 1.1rem;
+}
+
+nav div.project-tile:hover {
+  outline: 1px solid var(--background-color);
+}
+
+button#add-project {
+  background-color: var(--highlight-color);
+  width: 50%;
+}
+
+/* forms */
+
+form#project-form {
+  display: flex;
+  justify-content: space-between;
+}
+
+form#input-form {
+  flex-direction: row-reverse;
+  margin: 10px;
+  display: flex;
+  gap: 10px;
+}
+
+form#input-form input {
+  flex-grow: 1;
 }
 
 footer {
@@ -90,9 +198,14 @@ footer {
 }
 
 .task-tile {
-  padding: 20px 20px;
-  margin: 20px 20px;
+  border-radius: 10px;
+  padding: 10px 20px;
+  margin: 10px 10px;
   background-color: var(--light-color);
   display: flex;
   justify-content: space-between;
+}
+
+button.task-delete-button:active {
+  background-color: var(--positive-color);
 }
