@@ -81,7 +81,7 @@ class UI {
     // delete button:
     const deleteButton = document.createElement('button');
     deleteButton.innerText = 'X';
-    deleteButton.classList = 'delete-button';
+    deleteButton.classList = 'task-delete-button';
     // add delete function to the button:
     taskTile.appendChild(deleteButton);
     return taskTile;
@@ -132,7 +132,7 @@ class UI {
     // create delete button:
     const deleteButton = document.createElement('button');
     deleteButton.innerText = 'X';
-    deleteButton.classList = 'delete-button';
+    deleteButton.classList = 'project-delete-button';
     newProjectTile.appendChild(deleteButton);
     return newProjectTile;
   }
@@ -148,15 +148,12 @@ class UI {
   }
 }
 
-// test
+// code that needs to work now for testing:
 UI.addInput();
-
-// initial project
 const mainProject = new Project('Main Project');
 
-// EventListener
-// add buttton for Tasks
-document.querySelector('#input-form').addEventListener('submit', (event) => {
+//Main body:
+function addButtonForTasks(event) {
   // Prevent actual submit
   event.preventDefault();
 
@@ -170,45 +167,51 @@ document.querySelector('#input-form').addEventListener('submit', (event) => {
   mainProject.addTask(newTask);
   UI.displayTasks(mainProject);
   UI.clearTaskInput();
-});
-// delete button for Tasks
-document.querySelector('#content').addEventListener('click', (event) => {
-  if (event.target.className === 'delete-button') {
-    UI.removeTile(event.target.parentElement);
-    const taskName = event.target.parentElement.firstChild.innerText;
-    mainProject.removeTask(taskName);
+}
+addGlobalEventListener('submit', '#input-form', addButtonForTasks);
+
+function deleteButtonForTasks(event) {
+  UI.removeTile(event.target.parentElement);
+  const taskName = event.target.parentElement.firstChild.innerText;
+  mainProject.removeTask(taskName);
+}
+addGlobalEventListener('click', '.task-delete-button', deleteButtonForTasks);
+
+function deleteButtonForProjects(event) {
+  UI.removeTile(event.target.parentElement);
+  const projectName = event.target.parentElement.firstChild.innerText;
+  Storage.removeProject(projectName);
+}
+addGlobalEventListener(
+  'click',
+  '.project-delete-button',
+  deleteButtonForProjects
+);
+addGlobalEventListener('click', '#add-project', UI.addProjectInput);
+
+function addButtonForProjects(event) {
+  event.preventDefault();
+
+  let inputText = document.querySelector('.project-input').value;
+  if (inputText === '') {
+    inputText = 'Unnamed';
   }
-});
-// delete button for Projects:
-document
-  .querySelector('#projects-container')
-  .addEventListener('click', (event) => {
-    if (event.target.className === 'delete-button') {
-      UI.removeTile(event.target.parentElement);
-      const projectName = event.target.parentElement.firstChild.innerText;
-      Storage.removeProject(projectName);
-    }
-    if (event.target.className === 'project-tile') {
-      console.log('ziom');
+  const newProject = new Project(inputText);
+  Storage.addProject(newProject);
+  UI.hideProjectInput();
+  UI.displayProjects();
+}
+addGlobalEventListener('submit', '#project-form', addButtonForProjects);
+
+// function to wrap event listeners
+function addGlobalEventListener(type, selector, callback) {
+  document.addEventListener(type, (e) => {
+    if (e.target.matches(selector)) {
+      callback(e);
     }
   });
-
-document.querySelector('#add-project').addEventListener('click', (event) => {
-  UI.addProjectInput();
-});
-// Add button for projects
-document
-  .querySelector('#projects-container')
-  .addEventListener('submit', (event) => {
-    event.preventDefault();
-
-    let inputText = document.querySelector('.project-input').value;
-    console.log(inputText);
-    if (inputText === '') {
-      inputText = 'Unnamed';
-    }
-    const newProject = new Project(inputText);
-    Storage.addProject(newProject);
-    UI.hideProjectInput();
-    UI.displayProjects();
-  });
+}
+function changeCurrentProject(event) {
+  console.log(document.querySelector('.project-tile'));
+}
+addGlobalEventListener('click', '.project-tile', changeCurrentProject);
