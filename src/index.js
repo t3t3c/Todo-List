@@ -29,6 +29,23 @@ class Project {
     }
   }
 }
+
+class Storage {
+  static projects = [];
+  static addProject(newProject) {
+    Storage.projects.push(newProject);
+  }
+  static removeProject(projectName) {
+    for (let i = 0; i < this.projects.length; i++) {
+      const project = this.projects[i];
+      if (project.name === projectName) {
+        this.projects.splice(i, 1);
+        // we don't want to delete more than one:
+        break;
+      }
+    }
+  }
+}
 class UI {
   static addInput() {
     // add Container for the input
@@ -53,7 +70,6 @@ class UI {
     tilesContainer.id = 'tiles-container';
     content.appendChild(tilesContainer);
   }
-
   static createTaskTile(task) {
     // tile
     const taskTile = document.createElement('div');
@@ -71,11 +87,11 @@ class UI {
     return taskTile;
   }
 
-  static removeTaskTile(taskTile) {
+  static removeTile(taskTile) {
     taskTile.remove();
   }
 
-  static displayProject(project) {
+  static displayTasks(project) {
     const tilesContainer = document.querySelector('#tiles-container');
     // Clear tiles Container
     tilesContainer.innerHTML = '';
@@ -85,8 +101,50 @@ class UI {
       tilesContainer.appendChild(taskTile);
     }
   }
-  static clearInput() {
+  static clearTaskInput() {
     document.querySelector('#task-title').value = '';
+  }
+  static addProjectInput() {
+    const container = document.querySelector('#projects-container');
+    const form = document.createElement('form');
+    form.id = 'project-form';
+    const button = document.createElement('button');
+    button.className = 'project-button';
+    button.innerText = 'Add';
+    const input = document.createElement('input');
+    input.className = 'project-input';
+
+    form.appendChild(input);
+    form.appendChild(button);
+    container.appendChild(form);
+    input.focus();
+  }
+  static hideProjectInput() {
+    document.querySelector('#project-form').remove();
+  }
+  static createProjectTile(project) {
+    const newProjectTile = document.createElement('div');
+    newProjectTile.className = 'project-tile';
+    // add text:
+    const text = document.createElement('p');
+    text.innerText = project.name;
+    newProjectTile.appendChild(text);
+    // create delete button:
+    const deleteButton = document.createElement('button');
+    deleteButton.innerText = 'X';
+    deleteButton.classList = 'delete-button';
+    newProjectTile.appendChild(deleteButton);
+    return newProjectTile;
+  }
+  static displayProjects() {
+    const projectsContainer = document.querySelector('#projects-container');
+    projectsContainer.innerHTML = '';
+    console.log(Storage.projects);
+    for (const project of Storage.projects) {
+      // create new tile:
+      const newProjectTile = UI.createProjectTile(project);
+      projectsContainer.appendChild(newProjectTile);
+    }
   }
 }
 
@@ -97,31 +155,60 @@ UI.addInput();
 const mainProject = new Project('Main Project');
 
 // EventListener
+// add buttton for Tasks
 document.querySelector('#input-form').addEventListener('submit', (event) => {
   // Prevent actual submit
   event.preventDefault();
 
   // get form value:
-  const taskTitle = document.querySelector('#task-title').value;
-
+  let taskTitle = document.querySelector('#task-title').value;
+  if (taskTitle === '') {
+    taskTitle = 'Do nothing...';
+  }
   // add task:
   const newTask = new Task(taskTitle);
   mainProject.addTask(newTask);
-  UI.displayProject(mainProject);
-  UI.clearInput();
+  UI.displayTasks(mainProject);
+  UI.clearTaskInput();
 });
-
+// delete button for Tasks
 document.querySelector('#content').addEventListener('click', (event) => {
   if (event.target.className === 'delete-button') {
-    UI.removeTaskTile(event.target.parentElement);
+    UI.removeTile(event.target.parentElement);
     const taskName = event.target.parentElement.firstChild.innerText;
     mainProject.removeTask(taskName);
   }
 });
+// delete button for Projects:
+document
+  .querySelector('#projects-container')
+  .addEventListener('click', (event) => {
+    if (event.target.className === 'delete-button') {
+      UI.removeTile(event.target.parentElement);
+      const projectName = event.target.parentElement.firstChild.innerText;
+      Storage.removeProject(projectName);
+    }
+    if (event.target.className === 'project-tile') {
+      console.log('ziom');
+    }
+  });
 
+document.querySelector('#add-project').addEventListener('click', (event) => {
+  UI.addProjectInput();
+});
+// Add button for projects
+document
+  .querySelector('#projects-container')
+  .addEventListener('submit', (event) => {
+    event.preventDefault();
 
-
-// Wazne:
-// nie musimy za kazdym razem loopowac przez caly projekt zeby wyswietlic liste
-// mozemy wyswietlic zapisana liste a potem oddzielnie usuwac/doddawac elementy dla Project.Lista i UI.lista
-// przy kazdym odswiezeniu loopujemy przez Project.lista
+    let inputText = document.querySelector('.project-input').value;
+    console.log(inputText);
+    if (inputText === '') {
+      inputText = 'Unnamed';
+    }
+    const newProject = new Project(inputText);
+    Storage.addProject(newProject);
+    UI.hideProjectInput();
+    UI.displayProjects();
+  });
